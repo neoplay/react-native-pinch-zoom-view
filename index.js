@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {
   View,
   StyleSheet,
-  PanResponder
+  PanResponder,
+  Dimensions,
 } from 'react-native';
 
 export default class PinchZoomView extends Component {
@@ -24,7 +25,9 @@ export default class PinchZoomView extends Component {
       offsetX: 0,
       offsetY: 0,
       lastX: 0,
-      lastY: 0
+      lastY: 0,
+      touchCenterX: 0,
+      touchCenterY: 0,
     },
     this.distant = 150;
   }
@@ -56,6 +59,9 @@ export default class PinchZoomView extends Component {
       let dy = Math.abs(e.nativeEvent.touches[0].pageY - e.nativeEvent.touches[1].pageY);
       let distant = Math.sqrt(dx * dx + dy * dy);
       this.distant = distant;
+      const touchCenterX = (e.nativeEvent.touches[0].pageX + e.nativeEvent.touches[1].pageX) / 2;
+      const touchCenterY = (e.nativeEvent.touches[0].pageY + e.nativeEvent.touches[1].pageY) / 2;
+      this.setState({touchCenterX, touchCenterY})
     }
   }
 
@@ -75,16 +81,23 @@ export default class PinchZoomView extends Component {
       let distant = Math.sqrt(dx * dx + dy * dy);
       let scale = distant / this.distant * this.state.lastScale;
       this.setState({ scale });
+      this.props.onScale && this.props.onScale(scale);
     }
     // translate
     else if (gestureState.numberActiveTouches === 1) {
       let offsetX = this.state.lastX + gestureState.dx / this.state.scale;
       let offsetY = this.state.lastY + gestureState.dy / this.state.scale;
       this.setState({ offsetX, offsetY });
+      this.props.onOffset && this.props.onOffset({offsetX, offsetY});
     }
   }
 
+
   render() {
+    const correctionX = 0//(center.y) * (1 - this.state.scale) / this.state.scale;
+    const correctionY = (this.props.center.y) * (1 - this.state.scale) / this.state.scale;
+    // this.props.onCorrection && this.props.onCorrection({correctionX, correctionY});
+
     return (
         <View
           {...this.gestureHandlers.panHandlers}
@@ -92,8 +105,8 @@ export default class PinchZoomView extends Component {
             transform: [
               {scaleX: this.state.scale},
               {scaleY: this.state.scale},
-              {translateX: this.state.offsetX},
-              {translateY: this.state.offsetY}
+              {translateX: this.state.offsetX + correctionX},
+              {translateY: this.state.offsetY + correctionY}
             ]
           }]}>
           {this.props.children}
@@ -105,7 +118,7 @@ export default class PinchZoomView extends Component {
 const styles = StyleSheet.create({
  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    // justifyContent: 'center',
+    // alignItems: 'center'
   }
 });
