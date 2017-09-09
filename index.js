@@ -95,20 +95,21 @@ export default class PinchZoomView extends Component {
 
   render() {
     const correctionX = 0//(center.y) * (1 - this.state.scale) / this.state.scale;
-    const correctionY = (this.props.center.y) * (1 - this.state.scale) / this.state.scale;
-    // this.props.onCorrection && this.props.onCorrection({correctionX, correctionY});
+    const correctionY = 0//(this.props.center.y - this.state.touchCenterY) * (1 - this.state.scale) / this.state.scale;
 
     return (
         <View
           {...this.gestureHandlers.panHandlers}
-          style={[styles.container, this.props.style, {
-            transform: [
-              {scaleX: this.state.scale},
-              {scaleY: this.state.scale},
-              {translateX: this.state.offsetX + correctionX},
-              {translateY: this.state.offsetY + correctionY}
-            ]
-          }]}>
+          style={[styles.container, this.props.style, 
+            {
+              transform: [
+                {scaleX: this.state.scale},
+                {scaleY: this.state.scale},
+                {translateX: this.state.offsetX + correctionX},
+                {translateY: this.state.offsetY + correctionY}
+              ],
+            }
+          ]}>
           {this.props.children}
         </View>
     );
@@ -118,7 +119,5 @@ export default class PinchZoomView extends Component {
 const styles = StyleSheet.create({
  container: {
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center'
   }
 });
